@@ -15,3 +15,7 @@ After running `composer require mabahe/typo3-core-redirects` the patching will f
 be installed after `typo3/cms`.
 
 To fix this run `composer install`.
+
+## On top
+
+Additionally this package contains a patch to be able to set all domains of a site root dynamically using a placeholder as domain. This will hopefully be available in version 9 soon, too.
