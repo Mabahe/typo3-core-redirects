@@ -19,3 +19,7 @@ To fix this run `composer install`.
 ## On top
 
 Additionally this package contains a patch to be able to set all domains of a site root dynamically using a placeholder as domain. This will hopefully be available in version 9 soon, too.
+
+## Migrate
+
+From realurl redirects https://gist.github.com/Mabahe/99a92f9b25878cfec3af9f400bde6568.js
