@@ -1,0 +1,25 @@
+{
+  "name": "mabahe/typo3-core-redirects",
+  "description": "",
+  "license": "GPL-2.0+",
+  "require": {
+    "typo3/cms": "8.7.9",
+    "cweagans/composer-patches": "~1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "TYPO3\\CMS\\Redirects\\": "../../../vendor/typo3/cms/typo3/sysext/redirects/Classes/"
+    }
+  },
+  "extra": {
+    "patches": {
+      "typo3/cms": {
+        "[FEATURE] Add new main module Site": "vendor/mabahe/typo3-core-redirects/patches/typo3/cms/FEATURE_Add_new_main_module__Site_.patch",
+        "[FEATURE] Introduce Feature Toggles": "vendor/mabahe/typo3-core-redirects/patches/typo3/cms/FEATURE_Introduce_Feature_Toggles.patch",
+        "[FEATURE] Inject logger into newly created objects": "vendor/mabahe/typo3-core-redirects/patches/typo3/cms/FEATURE_Inject_logger_into_newly_created_objects.patch",
+        "[FEATURE] Add system extension redirects": "vendor/mabahe/typo3-core-redirects/patches/typo3/cms/FEATURE_Add_system_extension__redirects_.patch",
+        "[FEATURE] Support placeholder in source host of redirects": "vendor/mabahe/typo3-core-redirects/patches/typo3/cms/FEATURE_Support_placeholder_in_source_host_of_redirects.patch"
+      }
+    }
+  }
+}
