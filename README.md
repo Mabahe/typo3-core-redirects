@@ -8,6 +8,9 @@ Since this feature needs some other patches for the core, the composer patches p
 
 ## Installation
 
+Read (https://github.com/cweagans/composer-patches#user-content-allowing-patches-to-be-applied-from-dependencies) to allow
+patches to be applied from dependencies, if you don't already use composer patches.
+
 After running `composer require mabahe/typo3-core-redirects` the patching will fail, because the package will
 be installed after `typo3/cms`.
 
