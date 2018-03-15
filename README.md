@@ -22,4 +22,4 @@ Additionally this package contains a patch to be able to set all domains of a si
 
 ## Migrate
 
-From realurl redirects https://gist.github.com/Mabahe/99a92f9b25878cfec3af9f400bde6568.js
+From realurl redirects https://gist.github.com/Mabahe/99a92f9b25878cfec3af9f400bde6568
