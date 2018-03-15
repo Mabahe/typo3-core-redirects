@@ -1,6 +1,6 @@
 # TYPO3 v9 Redirects in v8.7
 
-This a composer package to integrate the redirects from version 9 into version 8.7.
+This is a composer package to integrate the redirects from version 9 into version 8.7.
 
 [![Redirects](https://img.youtube.com/vi/hln_FGFD_WY/0.jpg)](https://www.youtube.com/watch?v=hln_FGFD_WY)
 
