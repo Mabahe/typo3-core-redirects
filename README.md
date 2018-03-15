@@ -4,7 +4,7 @@ This is a composer package to integrate the redirects from version 9 into versio
 
 [![Redirects](https://img.youtube.com/vi/hln_FGFD_WY/0.jpg)](https://www.youtube.com/watch?v=hln_FGFD_WY)
 
-Since this feature needs some other patches for the core, the composer patches packages is used to the patch the core on `composer install`. 
+Since this feature needs some other patches for the core, the composer patches packages is used to patch the core on `composer install`. 
 
 ## Installation
 
