@@ -711,7 +711,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 --- typo3/sysext/redirects/Classes/Service/RedirectCacheService.php	(date 1515879118000)
 +++ typo3/sysext/redirects/Classes/Service/RedirectCacheService.php	(date 1515879118000)
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,126 @@
 +<?php
 +declare(strict_types = 1);
 +namespace TYPO3\CMS\Redirects\Service;
@@ -733,6 +733,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +use TYPO3\CMS\Core\Database\ConnectionPool;
 +use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 +use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
++use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 +use TYPO3\CMS\Core\Utility\GeneralUtility;
 +
 +/**
@@ -781,6 +782,9 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +    {
 +        $redirects = [];
 +        $this->flush();
++        if (!is_array($GLOBALS['TCA']) || !isset($GLOBALS['TCA']['sys_redirect'])) {
++            ExtensionManagementUtility::loadBaseTca();
++        }
 +        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_redirect');
 +        $queryBuilder->getRestrictions()->removeAll()
 +            ->add(GeneralUtility::makeInstance(HiddenRestriction::class))
@@ -841,7 +845,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 --- typo3/sysext/redirects/Classes/Service/RedirectService.php	(date 1515879118000)
 +++ typo3/sysext/redirects/Classes/Service/RedirectService.php	(date 1515879118000)
-@@ -0,0 +1,262 @@
+@@ -0,0 +1,266 @@
 +<?php
 +declare(strict_types = 1);
 +namespace TYPO3\CMS\Redirects\Service;
@@ -1068,6 +1072,10 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +            list($url) = $linkBuilder->build($linkDetails, '', '', $configuration);
 +            return new Uri($url);
 +        } catch (UnableToLinkException $e) {
++            // Link was build by DatabaseRecordLinkBuilder
++            if (!empty($GLOBALS['TSFE']->cObj->lastTypoLinkUrl)) {
++                return new Uri($GLOBALS['TSFE']->cObj->lastTypoLinkUrl);
++            }
 +        }
 +    }
 +
