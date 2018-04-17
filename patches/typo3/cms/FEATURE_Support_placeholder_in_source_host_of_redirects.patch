@@ -72,7 +72,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 --- typo3/sysext/redirects/Classes/Service/RedirectCacheService.php	(date 1515879118000)
 +++ typo3/sysext/redirects/Classes/Service/RedirectCacheService.php	(date 1521070775000)
-@@ -77,10 +77,23 @@
+@@ -81,10 +81,23 @@
              ->execute();
          while ($row = $statement->fetch()) {
              $host = $row['source_host'] ?: '*';
@@ -100,7 +100,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
              }
          }
          $this->cache->set('redirects', $redirects, ['redirects']);
-@@ -103,6 +116,13 @@
+@@ -107,6 +120,13 @@
              ->execute();
          while ($row = $statement->fetch()) {
              $host = $row['source_host'] ?: '*';
@@ -114,7 +114,7 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
              if ($row['is_regexp']) {
                  $redirects[$host]['regexp'][$row['source_path']][$row['uid']] = $row;
              } else {
-@@ -112,6 +132,28 @@
+@@ -116,6 +136,28 @@
          return $redirects;
      }
  
