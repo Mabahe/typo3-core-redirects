@@ -3,7 +3,7 @@
   "description": "",
   "license": "GPL-2.0+",
   "require": {
-    "typo3/cms": "^8.7.10",
+    "typo3/cms-core": "^8.7.10",
     "cweagans/composer-patches": "~1.0"
   },
   "autoload": {
