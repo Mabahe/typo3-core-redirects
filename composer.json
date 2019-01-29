@@ -4,6 +4,7 @@
 	"description": "Custom redirects in TYPO3.",
 	"homepage": "https://typo3.org",
 	"license": ["GPL-2.0-or-later"],
+	"version": "8.7.24",
 	"authors": [{
 		"name": "TYPO3 Core Team",
 		"email": "typo3cms@typo3.org",
@@ -28,16 +29,16 @@
 		},
 		"patches": {
 			"typo3/cms-core": {
-				"[FEATURE] Add new main module Site": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/feature/depend-on-subtree/patches/typo3/cms-core/FEATURE_Add_new_main_module__Site_.patch",
-				"[FEATURE] Introduce Feature Toggles": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/feature/depend-on-subtree/patches/typo3/cms-core/FEATURE_Introduce_Feature_Toggles.patch",
-				"[FEATURE] Inject logger into newly created objects": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/feature/depend-on-subtree/patches/typo3/cms-core/FEATURE_Inject_logger_into_newly_created_objects.patch",
-				"Additional cms-core patch": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/feature/depend-on-subtree/patches/typo3/cms-core/additional-cms-core.patch"
+				"[FEATURE] Add new main module Site": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/8.7.24/patches/typo3/cms-core/FEATURE_Add_new_main_module__Site_.patch",
+				"[FEATURE] Introduce Feature Toggles": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/8.7.24/patches/typo3/cms-core/FEATURE_Introduce_Feature_Toggles.patch",
+				"[FEATURE] Inject logger into newly created objects": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/8.7.24/patches/typo3/cms-core/FEATURE_Inject_logger_into_newly_created_objects.patch",
+				"Additional cms-core patch": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/8.7.24/patches/typo3/cms-core/additional-cms-core.patch"
 			},
 			"typo3/cms-fluid": {
-				"[FEATURE] Add v8 compatible be uri view helper": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/feature/depend-on-subtree/patches/typo3/cms-fluid/add-be-uri-view-helper.patch"
+				"[FEATURE] Add v8 compatible be uri view helper": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/8.7.24/patches/typo3/cms-fluid/add-be-uri-view-helper.patch"
 			},
 			"mabahe/typo3-core-redirects": {
-				"[FEATURE] Support placeholder in source host of redirects": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/feature/depend-on-subtree/patches/mabahe/typo3-core-redirects/FEATURE_Support_placeholder_in_source_host_of_redirects.patch"
+				"[FEATURE] Support placeholder in source host of redirects": "https://raw.githubusercontent.com/Mabahe/typo3-core-redirects/8.7.24/patches/mabahe/typo3-core-redirects/FEATURE_Support_placeholder_in_source_host_of_redirects.patch"
 			}
 		}
 	},
