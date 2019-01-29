@@ -36,13 +36,23 @@ class ValuePickerItemDataProvider implements FormDataProviderInterface
     {
         if ($result['tableName'] === 'sys_redirect' && isset($result['processedTca']['columns']['source_host'])) {
             $domains = $this->getDomains();
+            $pid = 0;
+            $items = $result['processedTca']['columns']['source_host']['config']['valuePicker']['items'];
             foreach ($domains as $domain) {
-                $result['processedTca']['columns']['source_host']['config']['valuePicker']['items'][] =
+                if ($pid !== $domain['pid']) {
+                    $pid = $domain['pid'];
+                    $items[] = [
+                        '%site_root_' . $pid . '%',
+                        '%site_root_' . $pid . '%'
+                    ];
+                }
+                $items[] =
                     [
-                        $domain,
-                        $domain,
+                        $domain['domainName'],
+                        $domain['domainName'],
                     ];
             }
+            $result['processedTca']['columns']['source_host']['config']['valuePicker']['items'] = $items;
         }
         return $result;
     }
@@ -55,16 +65,11 @@ class ValuePickerItemDataProvider implements FormDataProviderInterface
     protected function getDomains(): array
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_domain');
-        $sysDomainRecords = $queryBuilder
-            ->select('domainName')
+        $domains = $queryBuilder
+            ->select('domainName', 'pid')
             ->from('sys_domain')
             ->execute()
             ->fetchAll();
-        foreach ($sysDomainRecords as $domainRecord) {
-            $domains[] = $domainRecord['domainName'];
-        }
-        $domains = array_unique($domains);
-        sort($domains, SORT_NATURAL);
         return $domains;
     }
 

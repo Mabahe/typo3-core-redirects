@@ -81,16 +81,51 @@ class RedirectCacheService
             ->execute();
         while ($row = $statement->fetch()) {
             $host = $row['source_host'] ?: '*';
-            if ($row['is_regexp']) {
-                $redirects[$host]['regexp'][$row['source_path']][$row['uid']] = $row;
-            } elseif ($row['respect_query_parameters']) {
-                $redirects[$host]['respect_query_parameters'][$row['source_path']][$row['uid']] = $row;
+            $hosts = [];
+            // source host is a placeholder
+            if ($host[0] === '%') {
+                preg_match('/%site_root_([0-9]*)%/', $host, $matches);
+                if (!empty($matches[1])) {
+                        $domains = $this->getDomainsFromPid($matches[1]);
+                        $hosts = array_column($domains, 'domainName');
+                    }
             } else {
-                $redirects[$host]['flat'][rtrim($row['source_path'], '/') . '/'][$row['uid']] = $row;
+                $hosts = [$host];
+            }
+            foreach ($hosts as $host) {
+                if ($row['is_regexp']) {
+                    $redirects[$host]['regexp'][$row['source_path']][$row['uid']] = $row;
+                } elseif ($row['respect_query_parameters']) {
+                    $redirects[$host]['respect_query_parameters'][$row['source_path']][$row['uid']] = $row;
+                } else {
+                    $redirects[$host]['flat'][rtrim($row['source_path'], '/') . '/'][$row['uid']] = $row;
+                }
             }
         }
         $this->cache->set('redirects', $redirects, ['redirects']);
         return $redirects;
+    }
+
+    /**
+     * Get sys_domain records from database
+     *
+     * @param int $pid
+     * @return array domain records
+     */
+    protected function getDomainsFromPid($pid): array
+    {
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_domain');
+        $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(HiddenRestriction::class));
+        $domains = $queryBuilder
+            ->select('domainName')
+            ->from('sys_domain')
+            ->where($queryBuilder->expr()->eq(
+                'pid',
+                $queryBuilder->createNamedParameter($pid, \PDO::PARAM_INT)
+            ))
+            ->execute()
+            ->fetchAll();
+        return $domains;
     }
 
     /**

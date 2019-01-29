@@ -18,6 +18,7 @@ namespace TYPO3\CMS\Redirects\Repository;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -48,11 +49,33 @@ class RedirectRepository
      */
     public function findRedirectsByDemand(): array
     {
-        return $this->getQueryBuilderForDemand()
+        $redirects = $this->getQueryBuilderForDemand()
             ->setMaxResults($this->demand->getLimit())
             ->setFirstResult($this->demand->getOffset())
             ->execute()
             ->fetchAll();
+        foreach ($redirects as $key => $redirect) {
+            if ($redirect['source_host'][0] === '%') {
+                preg_match('/%site_root_([0-9]*)%/', $redirect['source_host'], $matches);
+                if (!empty($matches[1])) {
+                    $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_domain');
+                    $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(HiddenRestriction::class));
+                    $domains = $queryBuilder
+                        ->select('domainName')
+                        ->from('sys_domain')
+                        ->where($queryBuilder->expr()->eq(
+                            'pid',
+                            $queryBuilder->createNamedParameter($matches[1], \PDO::PARAM_INT)
+                        ))
+                        ->execute()
+                        ->fetchAll();
+                    $domainNames = array_column($domains, 'domainName');
+                    $redirects[$key]['firstDomainName'] = $domainNames[0];
+                    $redirects[$key]['domainNames'] = implode(', ', $domainNames);
+                }
+            }
+        }
+        return $redirects;
     }
 
     /**

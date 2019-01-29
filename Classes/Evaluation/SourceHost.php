@@ -32,6 +32,7 @@ class SourceHost
     {
         $jsCode = [];
         $jsCode[] = 'if (value === \'*\') {return value;}';
+        $jsCode[] = 'if (value.substring(0,1) === \'%\') {return value;}';
         $jsCode[] = 'var parser = document.createElement(\'a\');';
         $jsCode[] = 'parser.href = value.indexOf(\'://\') != -1 ? value : \'http://\' + value;';
         $jsCode[] = 'return parser.host;';
@@ -48,6 +49,10 @@ class SourceHost
     {
         // 1) Special case: * means any domain
         if ($value === '*') {
+            return $value;
+        }
+
+        if ($value[0] === '%') {
             return $value;
         }
 

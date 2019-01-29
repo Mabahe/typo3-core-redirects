@@ -59,7 +59,7 @@
 					<f:variable name="pageId" value="{rd:targetPageId(target:redirect.target)}" />
 					<f:variable name="targetUri" value="{f:uri.typolink(parameter:redirect.target)}" />
 					<tr>
-						<td>{redirect.source_host}</td>
+						<td><span title="{f:if(condition: redirect.domainNames, then: redirect.domainNames)}">{redirect.source_host}</span></td>
 						<td>
 							<f:alias map="{
 								disable: '{f:translate(key: \'LLL:EXT:redirects/Resources/Private/Language/locallang_module_redirect.xlf:record_disabled\')}',
@@ -108,9 +108,18 @@
 										<span class="btn btn-default disabled"><core:icon identifier="empty-empty" /></span>
 									</f:then>
 									<f:else>
-										<f:link.external class="btn btn-default" uri="{f:if(condition: '{redirect.source_host} == \'*\'', then: defaultUrl, else: redirect.source_host)}{redirect.source_path}" target="_blank">
-											<core:icon identifier="actions-view-page" />
-										</f:link.external>
+										<f:if condition="{redirect.domainNames}">
+											<f:then>
+												<f:link.external class="btn btn-default" uri="{redirect.firstDomainName}{redirect.source_path}" target="_blank">
+													<core:icon identifier="actions-view-page" />
+												</f:link.external>
+											</f:then>
+											<f:else>
+												<f:link.external class="btn btn-default" uri="{f:if(condition: '{redirect.source_host} == \'*\'', then: defaultUrl, else: redirect.source_host)}{redirect.source_path}" target="_blank">
+													<core:icon identifier="actions-view-page" />
+												</f:link.external>
+											</f:else>
+										</f:if>
 									</f:else>
 								</f:if>
 								<a class="btn btn-default" href="{rd:editRecord(command: 'edit', uid: redirect.uid)}" title="{f:translate(key: 'LLL:EXT:lang/Resources/Private/Language/locallang_mod_web_list.xlf:edit')}"><core:icon identifier="actions-open" /></a>
