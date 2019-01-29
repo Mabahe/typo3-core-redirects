@@ -1,0 +1,234 @@
+Index: Classes/Service/RedirectCacheService.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Classes/Service/RedirectCacheService.php	(date 1548544410000)
++++ Classes/Service/RedirectCacheService.php	(date 1548689912000)
+@@ -81,18 +81,53 @@
+             ->execute();
+         while ($row = $statement->fetch()) {
+             $host = $row['source_host'] ?: '*';
+-            if ($row['is_regexp']) {
+-                $redirects[$host]['regexp'][$row['source_path']][$row['uid']] = $row;
+-            } elseif ($row['respect_query_parameters']) {
+-                $redirects[$host]['respect_query_parameters'][$row['source_path']][$row['uid']] = $row;
+-            } else {
+-                $redirects[$host]['flat'][rtrim($row['source_path'], '/') . '/'][$row['uid']] = $row;
++            $hosts = [];
++            // source host is a placeholder
++            if ($host[0] === '%') {
++                preg_match('/%site_root_([0-9]*)%/', $host, $matches);
++                if (!empty($matches[1])) {
++                        $domains = $this->getDomainsFromPid($matches[1]);
++                        $hosts = array_column($domains, 'domainName');
++                    }
++            } else {
++                $hosts = [$host];
++            }
++            foreach ($hosts as $host) {
++                if ($row['is_regexp']) {
++                    $redirects[$host]['regexp'][$row['source_path']][$row['uid']] = $row;
++                } elseif ($row['respect_query_parameters']) {
++                    $redirects[$host]['respect_query_parameters'][$row['source_path']][$row['uid']] = $row;
++                } else {
++                    $redirects[$host]['flat'][rtrim($row['source_path'], '/') . '/'][$row['uid']] = $row;
++                }
+             }
+         }
+         $this->cache->set('redirects', $redirects, ['redirects']);
+         return $redirects;
+     }
+ 
++    /**
++     * Get sys_domain records from database
++     *
++     * @param int $pid
++     * @return array domain records
++     */
++    protected function getDomainsFromPid($pid): array
++    {
++        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_domain');
++        $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(HiddenRestriction::class));
++        $domains = $queryBuilder
++            ->select('domainName')
++            ->from('sys_domain')
++            ->where($queryBuilder->expr()->eq(
++                'pid',
++                $queryBuilder->createNamedParameter($pid, \PDO::PARAM_INT)
++            ))
++            ->execute()
++            ->fetchAll();
++        return $domains;
++    }
++
+     /**
+      * Flushes all redirects from the cache
+      */
+Index: Resources/Private/Templates/Management/Overview.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Resources/Private/Templates/Management/Overview.html	(date 1548544410000)
++++ Resources/Private/Templates/Management/Overview.html	(date 1548763703000)
+@@ -59,7 +59,7 @@
+ 					<f:variable name="pageId" value="{rd:targetPageId(target:redirect.target)}" />
+ 					<f:variable name="targetUri" value="{f:uri.typolink(parameter:redirect.target)}" />
+ 					<tr>
+-						<td>{redirect.source_host}</td>
++						<td><span title="{f:if(condition: redirect.domainNames, then: redirect.domainNames)}">{redirect.source_host}</span></td>
+ 						<td>
+ 							<f:alias map="{
+ 								disable: '{f:translate(key: \'LLL:EXT:redirects/Resources/Private/Language/locallang_module_redirect.xlf:record_disabled\')}',
+@@ -108,9 +108,18 @@
+ 										<span class="btn btn-default disabled"><core:icon identifier="empty-empty" /></span>
+ 									</f:then>
+ 									<f:else>
+-										<f:link.external class="btn btn-default" uri="{f:if(condition: '{redirect.source_host} == \'*\'', then: defaultUrl, else: redirect.source_host)}{redirect.source_path}" target="_blank">
+-											<core:icon identifier="actions-view-page" />
+-										</f:link.external>
++										<f:if condition="{redirect.domainNames}">
++											<f:then>
++												<f:link.external class="btn btn-default" uri="{redirect.firstDomainName}{redirect.source_path}" target="_blank">
++													<core:icon identifier="actions-view-page" />
++												</f:link.external>
++											</f:then>
++											<f:else>
++												<f:link.external class="btn btn-default" uri="{f:if(condition: '{redirect.source_host} == \'*\'', then: defaultUrl, else: redirect.source_host)}{redirect.source_path}" target="_blank">
++													<core:icon identifier="actions-view-page" />
++												</f:link.external>
++											</f:else>
++										</f:if>
+ 									</f:else>
+ 								</f:if>
+ 								<a class="btn btn-default" href="{rd:editRecord(command: 'edit', uid: redirect.uid)}" title="{f:translate(key: 'LLL:EXT:lang/Resources/Private/Language/locallang_mod_web_list.xlf:edit')}"><core:icon identifier="actions-open" /></a>
+Index: Classes/Repository/RedirectRepository.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Classes/Repository/RedirectRepository.php	(date 1548544410000)
++++ Classes/Repository/RedirectRepository.php	(date 1548763564000)
+@@ -18,6 +18,7 @@
+ use TYPO3\CMS\Core\Database\ConnectionPool;
+ use TYPO3\CMS\Core\Database\Query\QueryBuilder;
+ use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
++use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
+ use TYPO3\CMS\Core\Utility\GeneralUtility;
+ 
+ /**
+@@ -48,11 +49,33 @@
+      */
+     public function findRedirectsByDemand(): array
+     {
+-        return $this->getQueryBuilderForDemand()
++        $redirects = $this->getQueryBuilderForDemand()
+             ->setMaxResults($this->demand->getLimit())
+             ->setFirstResult($this->demand->getOffset())
+             ->execute()
+             ->fetchAll();
++        foreach ($redirects as $key => $redirect) {
++            if ($redirect['source_host'][0] === '%') {
++                preg_match('/%site_root_([0-9]*)%/', $redirect['source_host'], $matches);
++                if (!empty($matches[1])) {
++                    $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_domain');
++                    $queryBuilder->getRestrictions()->add(GeneralUtility::makeInstance(HiddenRestriction::class));
++                    $domains = $queryBuilder
++                        ->select('domainName')
++                        ->from('sys_domain')
++                        ->where($queryBuilder->expr()->eq(
++                            'pid',
++                            $queryBuilder->createNamedParameter($matches[1], \PDO::PARAM_INT)
++                        ))
++                        ->execute()
++                        ->fetchAll();
++                    $domainNames = array_column($domains, 'domainName');
++                    $redirects[$key]['firstDomainName'] = $domainNames[0];
++                    $redirects[$key]['domainNames'] = implode(', ', $domainNames);
++                }
++            }
++        }
++        return $redirects;
+     }
+ 
+     /**
+Index: Classes/Evaluation/SourceHost.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Classes/Evaluation/SourceHost.php	(date 1548544410000)
++++ Classes/Evaluation/SourceHost.php	(date 1548689339000)
+@@ -32,6 +32,7 @@
+     {
+         $jsCode = [];
+         $jsCode[] = 'if (value === \'*\') {return value;}';
++        $jsCode[] = 'if (value.substring(0,1) === \'%\') {return value;}';
+         $jsCode[] = 'var parser = document.createElement(\'a\');';
+         $jsCode[] = 'parser.href = value.indexOf(\'://\') != -1 ? value : \'http://\' + value;';
+         $jsCode[] = 'return parser.host;';
+@@ -50,6 +51,10 @@
+         if ($value === '*') {
+             return $value;
+         }
++
++        if ($value[0] === '%') {
++            return $value;
++        }
+ 
+         // 2) Check if value contains a protocol like http:// https:// etc...
+         if (strpos($value, '://') !== false) {
+Index: Classes/FormDataProvider/ValuePickerItemDataProvider.php
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- Classes/FormDataProvider/ValuePickerItemDataProvider.php	(date 1548544410000)
++++ Classes/FormDataProvider/ValuePickerItemDataProvider.php	(date 1548689570000)
+@@ -36,13 +36,23 @@
+     {
+         if ($result['tableName'] === 'sys_redirect' && isset($result['processedTca']['columns']['source_host'])) {
+             $domains = $this->getDomains();
++            $pid = 0;
++            $items = $result['processedTca']['columns']['source_host']['config']['valuePicker']['items'];
+             foreach ($domains as $domain) {
+-                $result['processedTca']['columns']['source_host']['config']['valuePicker']['items'][] =
++                if ($pid !== $domain['pid']) {
++                    $pid = $domain['pid'];
++                    $items[] = [
++                        '%site_root_' . $pid . '%',
++                        '%site_root_' . $pid . '%'
++                    ];
++                }
++                $items[] =
+                     [
+-                        $domain,
+-                        $domain,
++                        $domain['domainName'],
++                        $domain['domainName'],
+                     ];
+             }
++            $result['processedTca']['columns']['source_host']['config']['valuePicker']['items'] = $items;
+         }
+         return $result;
+     }
+@@ -55,16 +65,11 @@
+     protected function getDomains(): array
+     {
+         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('sys_domain');
+-        $sysDomainRecords = $queryBuilder
+-            ->select('domainName')
++        $domains = $queryBuilder
++            ->select('domainName', 'pid')
+             ->from('sys_domain')
+             ->execute()
+             ->fetchAll();
+-        foreach ($sysDomainRecords as $domainRecord) {
+-            $domains[] = $domainRecord['domainName'];
+-        }
+-        $domains = array_unique($domains);
+-        sort($domains, SORT_NATURAL);
+         return $domains;
+     }
+ 
