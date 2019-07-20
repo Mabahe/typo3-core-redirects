@@ -44,14 +44,11 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 --- Configuration/DefaultConfiguration.php	(date 1505045171000)
 +++ Configuration/DefaultConfiguration.php	(date 1515879118000)
-@@ -68,7 +68,9 @@
-         ],
-         'fileCreateMask' => '0664',
+@@ -73,6 +73,7 @@
          'folderCreateMask' => '2775',
--        'features' => [],
-+        'features' => [
-+            'redirects.hitCount' => false
-+        ],
+         'features' => [
+             'security.frontend.keepSessionDataOnLogout' => false,
++            'redirects.hitCount' => false,
+         ],
          'createGroup' => '',
          'sitename' => 'TYPO3',
-         'encryptionKey' => '',

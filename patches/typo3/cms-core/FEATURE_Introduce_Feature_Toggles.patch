@@ -109,19 +109,3 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 +        return isset($GLOBALS['TYPO3_CONF_VARS']['SYS']['features'][$featureName]) && $GLOBALS['TYPO3_CONF_VARS']['SYS']['features'][$featureName] === true;
 +    }
 +}
-Index: Configuration/DefaultConfiguration.php
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
---- Configuration/DefaultConfiguration.php	(date 1516635149000)
-+++ Configuration/DefaultConfiguration.php	(date 1509619600000)
-@@ -68,6 +68,7 @@
-         ],
-         'fileCreateMask' => '0664',
-         'folderCreateMask' => '2775',
-+        'features' => [],
-         'createGroup' => '',
-         'sitename' => 'TYPO3',
-         'encryptionKey' => '',
-
